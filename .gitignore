@@ -1,0 +1,18 @@
+# Skutečné přihlašovací údaje a lokální nastavení – v gitu je jen .env.example
+.env
+
+# Stažené ZIPy a rozbalené GML z ČÚZK (desítky MB, dají se kdykoli stáhnout znovu)
+server/data/
+
+# Backend – balíčky z Composeru (obnoví se přes composer install)
+server/vendor/
+
+# Frontend – závislosti z npm a výstup buildu
+node_modules/
+dist/
+
+# Editor a OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
