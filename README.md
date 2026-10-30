@@ -8,6 +8,8 @@ Při oddálení (pod zoom 14) se místo parcel zobrazí hranice a názvy katastr
 - **Backend:** PHP 8 bez frameworku, PostgreSQL + PostGIS. Parcely posílá jako vektorové dlaždice (MVT), detail jako JSON.
 - **Frontend:** React (Create React App), MapLibre GL přes react-map-gl, axios.
 
+Rozhodnutí, překvapení a co bych dělal jinak: [ZAPISNIK.md](ZAPISNIK.md).
+
 ## Struktura
 
 ```
@@ -98,3 +100,35 @@ npm start
 ```
 
 Aplikace běží na http://localhost:3000. V `client/.env` je adresa backendu (`REACT_APP_API_URL`). Bez souboru `.env` se použije `http://localhost:8000`.
+
+## Zápisník
+
+### Rozsah
+
+Naimportovaný je celý okres Jičín: 240 k.ú. a 272 001 parcel. Import trval 3,5 minuty, ZIPy z ČÚZK mají 153 MB a parcely zabírají v databázi 109 MB. Import umí i jedno k.ú. nebo jednu obec, viz Spuštění.
+
+### Hlavní rozhodnutí
+
+- **Data předem stažená, ne živě z WFS.** WFS má limity na počet prvků a pro celý okres by byl pomalý. Katastr se mění pomalu, takže stačí jednorázový import do PostGIS.
+- **Vektorové dlaždice (MVT).** Prohlížeč stáhne jen to, co je zrovna vidět, ne všechny parcely najednou.
+- **Parcely až od zoomu 14, pod ním hranice k.ú.** Z větší dálky se na parcelu nedá kliknout. Kliknutím na k.ú. se mapa přiblíží na jeho parcely.
+- **Čisté PHP bez frameworku.** Pár endpointů nepotřebuje framework. Kód je rozdělený na Controller → Service → Dao.
+- **Frontend:** React a MapLibre GL, podklad OpenStreetMap.
+
+### Co mě překvapilo
+
+- **Jak je katastr členěný.** S katastrem jsem nikdy nepracoval. Nevěděl jsem, že mezi obcí a parcelou je ještě katastrální území, že obec jich může mít víc (Jičín má 5) a že data ČÚZK jsou rozdělená právě po k.ú.
+- **Souřadnicové systémy.** Jedno místo jde zapsat různými čísly podle systému: český katastr (S-JTSK), GPS (WGS84) a webové mapy (Web Mercator). Porovnávat jde jen souřadnice ve stejném systému, proto jsou v SQL dotazech převody.
+- **Parcely na mapě nejde stylovat přes CSS.** MapLibre je kreslí přes WebGL do jednoho canvasu, takže vzhled se nastavuje jeho vlastními výrazy v JavaScriptu.
+
+### Co bych s víc časem řešil jinak
+
+- **Cache dlaždic** (soubory na disku nebo tabulka v DB), mazaná při importu.
+- **Testy**
+- **Vyhledávání** parcely podle čísla a katastrálního území. Popřípadě i nějaké filtry.
+
+### Čas a nástroje
+
+Přibližně 9 hodin. Nejvíc času zabralo zorientovat se v datech ČÚZK.
+
+Kód za mě převážně psal Claude Code. Já jsem rozhodoval o architektuře a o tom, co aplikace bude dělat. Výstupy jsem pak kontroloval a popřípadě trochu upravoval.
