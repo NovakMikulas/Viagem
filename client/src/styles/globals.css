@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+}
+
+.parcel-map {
+  position: absolute;
+  inset: 0;
+}
+
+.zoom-hint {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(30, 30, 30, 0.85);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.parcel-detail {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 300px;
+  max-width: calc(100% - 32px);
+  padding: 16px 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+}
+
+.parcel-detail h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.parcel-detail-subtitle {
+  margin: 0 0 12px;
+  color: #666;
+}
+
+.parcel-detail dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+}
+
+.parcel-detail dt {
+  color: #666;
+}
+
+.parcel-detail dd {
+  margin: 0;
+}
+
+.land-type-color {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.parcel-detail-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+}
+
+.parcel-detail-close:hover {
+  color: #000;
+}
