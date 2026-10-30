@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Import;
 
 use DOMDocument;
+use DOMElement;
 use DOMXPath;
 use Generator;
 use RuntimeException;
@@ -23,11 +24,13 @@ class GmlParcelReader
     private const SRS_NAME_URL = 'http://www.opengis.net/def/crs/EPSG/0/5514';
 
     private string $cadastralUnitName = '';
+    private ?string $cadastralUnitGeometryGml = null;
     private int $skippedAnalogueCount = 0;
 
     public function read(string $zipPath): Generator
     {
         $this->cadastralUnitName = '';
+        $this->cadastralUnitGeometryGml = null;
         $this->skippedAnalogueCount = 0;
 
         $reader = new XMLReader();
@@ -43,7 +46,7 @@ class GmlParcelReader
             if ($reader->localName === 'CadastralParcel') {
                 yield $this->parseParcel($reader->readOuterXml());
             } elseif ($reader->localName === 'CadastralZoning') {
-                $this->cadastralUnitName = $this->parseCadastralUnitName($reader->readOuterXml());
+                $this->parseCadastralZoning($reader->readOuterXml());
             } elseif ($reader->localName === 'AnalogueCadastralParcel') {
                 $this->skippedAnalogueCount++;
             }
@@ -55,6 +58,11 @@ class GmlParcelReader
     public function getCadastralUnitName(): string
     {
         return $this->cadastralUnitName;
+    }
+
+    public function getCadastralUnitGeometryGml(): ?string
+    {
+        return $this->cadastralUnitGeometryGml;
     }
 
     public function getSkippedAnalogueCount(): int
@@ -101,12 +109,10 @@ class GmlParcelReader
         $area = $xpath->evaluate('string(cp:areaValue)', $parcel);
         $validFrom = $xpath->evaluate('string(cp:beginLifespanVersion)', $parcel);
 
-        $geometry = $xpath->query('cp:geometry/*', $parcel)->item(0);
-        if ($geometry === null) {
+        $geometryGml = $this->extractGeometryGml($xpath, $parcel);
+        if ($geometryGml === null) {
             throw new RuntimeException('Parcela ' . $gmlId . ' nemá geometrii.');
         }
-        $geometryGml = $xpath->document->saveXML($geometry);
-        $geometryGml = str_replace(self::SRS_NAME_URL, 'EPSG:5514', $geometryGml);
 
         return [
             'id' => (int) substr($gmlId, strlen('CPX.')),
@@ -119,11 +125,25 @@ class GmlParcelReader
         ];
     }
 
-    private function parseCadastralUnitName(string $xml): string
+    private function parseCadastralZoning(string $xml): void
     {
         $xpath = $this->createXPath($xml);
+        $zoning = $xpath->document->documentElement;
 
-        return $xpath->evaluate('string(cp:label)', $xpath->document->documentElement);
+        $this->cadastralUnitName = $xpath->evaluate('string(cp:label)', $zoning);
+        $this->cadastralUnitGeometryGml = $this->extractGeometryGml($xpath, $zoning);
+    }
+
+    private function extractGeometryGml(DOMXPath $xpath, DOMElement $feature): ?string
+    {
+        $geometry = $xpath->query('cp:geometry/*', $feature)->item(0);
+        if ($geometry === null) {
+            return null;
+        }
+
+        $geometryGml = $xpath->document->saveXML($geometry);
+
+        return str_replace(self::SRS_NAME_URL, 'EPSG:5514', $geometryGml);
     }
 
     private function createXPath(string $xml): DOMXPath

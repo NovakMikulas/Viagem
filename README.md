@@ -2,6 +2,8 @@
 
 Webová aplikace, která zobrazuje katastrální parcely okresu Jičín na mapě. Po kliknutí na parcelu se zobrazí její detail (číslo, katastrální území, výměra, druh pozemku, datum poslední změny).
 
+Při oddálení (pod zoom 14) se místo parcel zobrazí hranice a názvy katastrálních území – z takové dálky by parcela měla jen pár pixelů a nedalo by se na ni kliknout. Kliknutím na k.ú. se mapa přiblíží na něj a zobrazí jeho parcely.
+
 - **Data:** ČÚZK – INSPIRE katastrální parcely (CPX, GML) pro jednotlivá katastrální území, seznam k.ú. z RÚIAN.
 - **Backend:** PHP 8 bez frameworku, PostgreSQL + PostGIS. Parcely posílá jako vektorové dlaždice (MVT), detail jako JSON.
 - **Frontend:** React (Create React App), MapLibre GL přes react-map-gl, axios.
@@ -24,6 +26,7 @@ client/
 |---|---|
 | `GET /api/tiles/{z}/{x}/{y}.pbf` | vektorová dlaždice s parcelami (vrstva `parcels`), od zoomu 14 |
 | `GET /api/parcels/{id}` | detail parcely jako JSON |
+| `GET /api/cadastral-units` | hranice naimportovaných k.ú. jako GeoJSON (polygon + bod pro popisek) |
 
 ## Prerekvizity
 
@@ -71,7 +74,9 @@ Typy importu:
 | `php scripts/import.php obec 572659` | všechna k.ú. obce (Jičín = 5 k.ú., ~17 000 parcel) |
 | `php scripts/import.php okres 3604` | všechna k.ú. okresu Jičín (240 k.ú.) |
 
-Stažené ZIPy se ukládají do `server/data/` a při dalším importu se použijí znovu. Přepínač `--force` je stáhne znovu. Import je možné spouštět opakovaně – parcely daného k.ú. se vždy nahradí.
+Stažené ZIPy se ukládají do `server/data/` a při dalším importu se použijí znovu. Přepínač `--force` je stáhne znovu. Import je možné spouštět opakovaně – parcely daného k.ú. se vždy nahradí. Spolu s parcelami se ukládá i oficiální hranice k.ú. (`CadastralZoning` ze stejného GML).
+
+Databázi založenou před přidáním hranic k.ú. stačí aktualizovat: znovu spustit `server/sql/schema.sql` (doplní sloupec) a import (použije už stažené ZIPy).
 
 ### 4. Spuštění backendu
 

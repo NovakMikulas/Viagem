@@ -3,8 +3,12 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE IF NOT EXISTS cadastral_units (
     code         INTEGER PRIMARY KEY,
     name         TEXT NOT NULL,
+    geom         geometry(MultiPolygon, 4326),
     imported_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Pro databáze založené před přidáním hranic k.ú.
+ALTER TABLE cadastral_units ADD COLUMN IF NOT EXISTS geom geometry(MultiPolygon, 4326);
 
 CREATE TABLE IF NOT EXISTS parcels (
     id                   BIGINT PRIMARY KEY,

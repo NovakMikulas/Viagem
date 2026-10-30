@@ -36,7 +36,11 @@ class ImportParcelsService
 
         $parcelCount = $this->replaceParcelsDao->execute($cadastralUnitCode, $this->reader->read($zipPath));
 
-        $this->saveCadastralUnitDao->execute($cadastralUnitCode, $this->reader->getCadastralUnitName());
+        $this->saveCadastralUnitDao->execute(
+            $cadastralUnitCode,
+            $this->reader->getCadastralUnitName(),
+            $this->reader->getCadastralUnitGeometryGml()
+        );
 
         return [
             'name' => $this->reader->getCadastralUnitName(),

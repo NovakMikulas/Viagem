@@ -15,12 +15,13 @@ class SaveCadastralUnitDao
         $this->pdo = $pdo;
     }
 
-    public function execute(int $code, string $name): void
+    public function execute(int $code, string $name, ?string $geometryGml): void
     {
         $statement = $this->pdo->prepare(
-            'INSERT INTO cadastral_units (code, name, imported_at) VALUES (:code, :name, now())
-             ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, imported_at = now()'
+            'INSERT INTO cadastral_units (code, name, geom, imported_at)
+             VALUES (:code, :name, ST_Multi(ST_Transform(ST_GeomFromGML(:geometry_gml), 4326)), now())
+             ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, geom = EXCLUDED.geom, imported_at = now()'
         );
-        $statement->execute(['code' => $code, 'name' => $name]);
+        $statement->execute(['code' => $code, 'name' => $name, 'geometry_gml' => $geometryGml]);
     }
 }

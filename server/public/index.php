@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Controller\CadastralUnitController;
 use App\Controller\ParcelController;
+use App\Dao\GetCadastralUnitsDao;
 use App\Dao\GetParcelDao;
 use App\Dao\GetParcelTileDao;
 use App\Database\Database;
 use App\Http\Middleware\ErrorHandlerMiddleware;
 use App\Http\Request;
 use App\Http\Router;
+use App\Routes\CadastralUnitRoutes;
 use App\Routes\ParcelRoutes;
+use App\Service\GetCadastralUnitsService;
 use App\Service\GetParcelService;
 use App\Service\GetParcelTileService;
 use Dotenv\Dotenv;
@@ -26,13 +30,17 @@ $errorHandler->handle(function () {
     $dotenv->required(['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']);
 
     $pdo = Database::connect();
-    $controller = new ParcelController(
+    $parcelController = new ParcelController(
         new GetParcelTileService(new GetParcelTileDao($pdo)),
         new GetParcelService(new GetParcelDao($pdo))
     );
+    $cadastralUnitController = new CadastralUnitController(
+        new GetCadastralUnitsService(new GetCadastralUnitsDao($pdo))
+    );
 
     $router = new Router();
-    ParcelRoutes::register($router, $controller);
+    ParcelRoutes::register($router, $parcelController);
+    CadastralUnitRoutes::register($router, $cadastralUnitController);
 
     $router->dispatch(Request::fromGlobals());
 });
